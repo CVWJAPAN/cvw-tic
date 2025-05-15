@@ -32,6 +32,7 @@
     }
     #chaga-image {
       width: 120px;
+      height: 120px;
       position: relative;
       transition: transform 0.3s;
     }
@@ -105,7 +106,7 @@
     }
     @media (max-width: 400px) {
       h2 { font-size: 1.2em; }
-      #chaga-image { width: 100px; }
+      #chaga-image { width: 100px; height: 100px; }
       button { padding: 12px 24px; font-size: 0.9em; }
       #cheer-message, #cheer-count, #stage-info, #intro-text { font-size: 0.7em; }
       #quiz-box { width: 80%; font-size: 0.7em; }
@@ -118,13 +119,7 @@
     <div id="intro-text">
       このゲームで遊んだ子は、安全な行動をしっかり覚えられるよ！オーストラリアの似たゲーム「Orbit」では、3ヶ月後も子どもたちが学んだことを覚えてました。学校でも使われてるんだ！CHAGAと一緒に、こどものこえを守る力を育てよう！
     </div>
-    <svg id="chaga-image" width="120" height="120" viewBox="0 0 120 120">
-      <circle cx="60" cy="60" r="50" fill="#ff6200"/>
-      <path d="M40 45 Q60 25 80 45" stroke="#fff" stroke-width="8" fill="none"/>
-      <circle cx="50" cy="50" r="7" fill="#fff"/>
-      <circle cx="70" cy="50" r="7" fill="#fff"/>
-      <path d="M55 75 Q60 80 65 75" stroke="#fff" stroke-width="5" fill="none"/>
-    </svg>
+    <img id="chaga-image" src="./assets/chaga-park.png" alt="CHAGA in park">
     <div id="stage-info">ステージ1：公園でこどものこえをさがす</div>
     <button id="cheer-button" onclick="cheerChaga()">CHAGAを応援！</button>
     <div id="cheer-message"></div>
@@ -142,9 +137,9 @@
     let lastClick = 0;
     let inQuiz = false;
     const stages = [
-      { name: '公園', message: 'CHAGA：公園でこどものこえをさがすよ！', bg: '#fff3e0' },
-      { name: '学校', message: 'CHAGA：学校でこどものこえを守る！', bg: '#e8f5e9' },
-      { name: '広場', message: 'CHAGA：広場でみんなのこえを届ける！', bg: '#e3f2fd' }
+      { name: '公園', message: 'CHAGA：公園でこどものこえをさがすよ！', img: './assets/chaga-park.png', bg: '#fff3e0' },
+      { name: '学校', message: 'CHAGA：学校でこどものこえを守る！', img: './assets/chaga-school.png', bg: '#e8f5e9' },
+      { name: '広場', message: 'CHAGA：広場でみんなのこえを届ける！', img: './assets/chaga-square.png', bg: '#e3f2fd' }
     ];
     const messages = [
       'CHAGA：やった！きみの応援、めっちゃ嬉しい！',
@@ -183,9 +178,11 @@
       if (cheerCount >= 10 && stage === 1) {
         stage = 2;
         document.body.style.background = `linear-gradient(${stages[1].bg}, #ccffcc)`;
+        image.src = stages[1].img;
       } else if (cheerCount >= 20 && stage === 2) {
         stage = 3;
         document.body.style.background = `linear-gradient(${stages[2].bg}, #bbdefb)`;
+        image.src = stages[2].img;
       }
       
       // メッセージ
@@ -210,7 +207,6 @@
       if (stage === 3 && cheerCount >= 20) {
         message.innerHTML += '<br>🎉 CHAGA：きみのおかげで大成功！ありがとう！';
         image.style.transform = 'scale(1.5)';
-        image.innerHTML += '<circle cx="60" cy="20" r="10" fill="#fff"/>';
       }
       
       // クイズ（5ポイントごと）
