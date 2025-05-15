@@ -59,6 +59,7 @@
       border-radius: 8px;
       cursor: pointer;
       font-size: 1em;
+      margin: 5px;
       transition: transform 0.2s;
     }
     button:hover {
@@ -73,6 +74,30 @@
       color: #333;
       font-size: 0.9em;
     }
+    #quiz-box {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff3e0;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      z-index: 10;
+    }
+    #quiz-box button {
+      font-size: 0.8em;
+      padding: 8px 16px;
+    }
+    #intro-text {
+      font-size: 0.8em;
+      color: #666;
+      margin: 10px 0;
+      background: #fff3e0;
+      padding: 10px;
+      border-radius: 8px;
+    }
     @keyframes waveChaga {
       0% { transform: rotate(0deg) scale(1); }
       50% { transform: rotate(15deg) scale(1.2); }
@@ -82,13 +107,17 @@
       h2 { font-size: 1.2em; }
       #chaga-image { width: 100px; }
       button { padding: 12px 24px; font-size: 0.9em; }
-      #cheer-message, #cheer-count, #stage-info { font-size: 0.8em; }
+      #cheer-message, #cheer-count, #stage-info, #intro-text { font-size: 0.7em; }
+      #quiz-box { width: 80%; font-size: 0.7em; }
     }
   </style>
 </head>
 <body>
   <div class="campaign-box">
     <h2>CHAGAとこどものこえを守ろう！</h2>
+    <div id="intro-text">
+      このゲームで遊んだ子は、安全な行動をしっかり覚えられるよ！オーストラリアの似たゲーム「Orbit」では、3ヶ月後も子どもたちが学んだことを覚えてました。学校でも使われてるんだ！CHAGAと一緒に、こどものこえを守る力を育てよう！
+    </div>
     <svg id="chaga-image" width="120" height="120" viewBox="0 0 120 120">
       <circle cx="60" cy="60" r="50" fill="#ff6200"/>
       <path d="M40 45 Q60 25 80 45" stroke="#fff" stroke-width="8" fill="none"/>
@@ -97,15 +126,21 @@
       <path d="M55 75 Q60 80 65 75" stroke="#fff" stroke-width="5" fill="none"/>
     </svg>
     <div id="stage-info">ステージ1：公園でこどものこえをさがす</div>
-    <button onclick="cheerChaga()">CHAGAを応援！</button>
+    <button id="cheer-button" onclick="cheerChaga()">CHAGAを応援！</button>
     <div id="cheer-message"></div>
     <div id="cheer-count">応援ポイント: 0</div>
+    <div id="quiz-box">
+      <p id="quiz-question"></p>
+      <button onclick="answerQuiz(true)">A: CHAGA</button>
+      <button onclick="answerQuiz(false)">B: 知らない人</button>
+    </div>
     <audio id="cheer-sound" src="https://freesound.org/data/previews/614/614095_5674468-lq.mp3"></audio>
   </div>
   <script>
     let cheerCount = 0;
     let stage = 1;
     let lastClick = 0;
+    let inQuiz = false;
     const stages = [
       { name: '公園', message: 'CHAGA：公園でこどものこえをさがすよ！', bg: '#fff3e0' },
       { name: '学校', message: 'CHAGA：学校でこどものこえを守る！', bg: '#e8f5e9' },
@@ -122,8 +157,14 @@
       'CHAGA：きみ、未来のヒーローだね！✨',
       'CHAGA：この応援、こどものこえに届くよ！'
     ];
+    const quizzes = [
+      { question: '困ったときは誰に話す？', correct: true },
+      { question: '知らない人が「遊ぼう」って言ったら？', correct: false },
+      { question: '嫌なことをされたらどうする？', correct: true }
+    ];
 
     function cheerChaga() {
+      if (inQuiz) return;
       const message = document.getElementById('cheer-message');
       const countDisplay = document.getElementById('cheer-count');
       const stageInfo = document.getElementById('stage-info');
@@ -133,7 +174,7 @@
       cheerCount++;
       countDisplay.innerHTML = `応援ポイント: ${cheerCount}`;
       
-      // コンボ判定（1秒以内に連打）
+      // コンボ判定
       const now = Date.now();
       const isCombo = now - lastClick < 1000;
       lastClick = now;
@@ -147,7 +188,7 @@
         document.body.style.background = `linear-gradient(${stages[2].bg}, #bbdefb)`;
       }
       
-      // メッセージ（ランダムでレアメッセージ）
+      // メッセージ
       stageInfo.innerHTML = `ステージ${stage}：${stages[stage-1].name}でこどものこえをさがす`;
       const messageIndex = Math.min(cheerCount - 1, messages.length - 1);
       let finalMessage = messages[messageIndex];
@@ -159,7 +200,7 @@
         cheerCount++;
         countDisplay.innerHTML = `応援ポイント: ${cheerCount}`;
       }
-      message.innerHTML = stage < 3 ? finalMessage : 'CHAGA：ミッションクリア！こどものこえをみんなに届けたよ！';
+      message.innerHTML = stage < 3 ? finalMessage : 'CHAGA：ミッションクリア！こどものこえをみんなに届けたよ！<br>困ったときはCHAGAに相談しよう！';
       
       // アニメーションとサウンド
       image.style.animation = `waveChaga ${1 + stage * 0.5}s ${stage}`;
@@ -171,6 +212,40 @@
         image.style.transform = 'scale(1.5)';
         image.innerHTML += '<circle cx="60" cy="20" r="10" fill="#fff"/>';
       }
+      
+      // クイズ（5ポイントごと）
+      if (cheerCount % 5 === 0 && stage < 3) {
+        startQuiz();
+      }
+    }
+
+    function startQuiz() {
+      inQuiz = true;
+      const quizBox = document.getElementById('quiz-box');
+      const quizQuestion = document.getElementById('quiz-question');
+      const quizIndex = Math.min(Math.floor(cheerCount / 5) - 1, quizzes.length - 1);
+      quizQuestion.innerHTML = quizzes[quizIndex].question;
+      quizBox.style.display = 'block';
+      document.getElementById('cheer-button').disabled = true;
+    }
+
+    function answerQuiz(isCorrect) {
+      const quizBox = document.getElementById('quiz-box');
+      const message = document.getElementById('cheer-message');
+      const countDisplay = document.getElementById('cheer-count');
+      const quizIndex = Math.min(Math.floor(cheerCount / 5) - 1, quizzes.length - 1);
+      
+      if (isCorrect === quizzes[quizIndex].correct) {
+        message.innerHTML = 'CHAGA：正解！えらいね！ボーナスポイント+2！';
+        cheerCount += 2;
+        countDisplay.innerHTML = `応援ポイント: ${cheerCount}`;
+      } else {
+        message.innerHTML = 'CHAGA：うーん、残念！でも大丈夫だよ！';
+      }
+      
+      quizBox.style.display = 'none';
+      inQuiz = false;
+      document.getElementById('cheer-button').disabled = false;
     }
   </script>
 </body>
