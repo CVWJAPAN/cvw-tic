@@ -2,36 +2,178 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>CHAGAと学ぶトラウマ・インフォームド・ケア</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CHAGAとこどものこえを守ろう！</title>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Arial', sans-serif; background: #ffe6f0; color: #333; }
-    .chaga-box { text-align: center; padding: 20px; }
-    .chaga-image { width: 200px; animation: waveRibbon 1s infinite; }
-    @keyframes waveRibbon { 0% { transform: rotate(0deg); } 50% { transform: rotate(10deg); } 100% { transform: rotate(0deg); } }
-    button { background: #ff9900; color: white; border: none; padding: 10px 20px; cursor: pointer; }
-    button:hover { background: #e68a00; }
+    body {
+      font-family: 'M PLUS Rounded 1c', system-ui, sans-serif;
+      background: linear-gradient(#fff3e0, #ffcc80);
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .campaign-box {
+      text-align: center;
+      padding: 20px;
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      max-width: 400px;
+      position: relative;
+    }
+    h2 {
+      color: #ff6200;
+      font-size: 1.5em;
+      margin: 0 0 10px;
+    }
+    #chaga-image {
+      width: 150px;
+      position: relative;
+      transition: transform 0.3s;
+    }
+    #chaga-image::after {
+      content: '';
+      position: absolute;
+      top: -15px;
+      right: -15px;
+      width: 30px;
+      height: 30px;
+      background: radial-gradient(circle, #fff, transparent);
+      opacity: 0;
+      animation: sparkle 1.5s infinite;
+    }
+    @keyframes sparkle {
+      0% { opacity: 0; transform: scale(0.5); }
+      50% { opacity: 1; transform: scale(1.3); }
+      100% { opacity: 0; transform: scale(0.5); }
+    }
+    button {
+      padding: 12px 24px;
+      background: #ff6200;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: transform 0.2s;
+    }
+    button:hover {
+      transform: scale(1.1);
+    }
+    button:active {
+      background: #e55a00;
+      transform: scale(0.95);
+    }
+    #cheer-message, #cheer-count, #stage-info {
+      margin: 10px 0;
+      color: #333;
+      font-size: 0.9em;
+    }
+    @keyframes waveChaga {
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(15deg) scale(1.2); }
+      100% { transform: rotate(0deg) scale(1); }
+    }
+    @media (max-width: 600px) {
+      .campaign-box { max-width: 90%; padding: 15px; }
+      h2 { font-size: 1.2em; }
+      #chaga-image { width: 120px; }
+      button { font-size: 0.9em; }
+    }
+    @media (max-width: 400px) {
+      h2 { font-size: 1em; }
+      #chaga-image { width: 100px; }
+      #cheer-message, #cheer-count, #stage-info { font-size: 0.8em; }
+    }
   </style>
 </head>
 <body>
-  <div class="chaga-box">
-    <h1>CHAGAと学ぶトラウマ・インフォームド・ケア</h1>
-    <img src="chaga_orange_ribbon.png" alt="CHAGAとオレンジリボン" class="chaga-image">
-    <p>ぼく、CHAGA！ トラウマって、こころにいたむことだよ。いっしょにあんぜんなせかいをつくろう！</p>
-    <h2>トラウマとは</h2>
-    <p>いやなことがあったとき、こころがとてもいたむことだよ。たとえば、こわいおもいをしたり。</p>
-    <h2>クイズ</h2>
-    <p>いやなことがあったら、どうする？</p>
-    <button onclick="answerQuiz('A')">A. だれかにいう</button>
-    <button onclick="answerQuiz('B')">B. がまんする</button>
-    <div id="quiz-result"></div>
+  <div class="campaign-box">
+    <h2>CHAGAとこどものこえを守ろう！</h2>
+    <svg id="chaga-image" width="150" height="150" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="50" fill="#ff6200"/>
+      <path d="M40 45 Q60 25 80 45" stroke="#fff" stroke-width="8" fill="none"/>
+      <circle cx="50" cy="50" r="7" fill="#fff"/>
+      <circle cx="70" cy="50" r="7" fill="#fff"/>
+      <path d="M55 75 Q60 80 65 75" stroke="#fff" stroke-width="5" fill="none"/>
+    </svg>
+    <div id="stage-info">ステージ1：公園でこどものこえをさがす</div>
+    <button onclick="cheerChaga()">CHAGAを応援！</button>
+    <div id="cheer-message"></div>
+    <div id="cheer-count">応援ポイント: 0</div>
+    <audio id="cheer-sound" src="https://freesound.org/data/previews/614/614095_5674468-lq.mp3"></audio>
   </div>
   <script>
-    function answerQuiz(choice) {
-      const result = document.getElementById('quiz-result');
-      if (choice === 'A') {
-        result.innerHTML = 'CHAGA：えらい！ だれかにいってね！';
-      } else {
-        result.innerHTML = 'CHAGA：がまんしなくていいよ。だれかにいってみよう！';
+    let cheerCount = 0;
+    let stage = 1;
+    let lastClick = 0;
+    const stages = [
+      { name: '公園', message: 'CHAGA：公園でこどものこえをさがすよ！', bg: '#fff3e0' },
+      { name: '学校', message: 'CHAGA：学校でこどものこえを守る！', bg: '#e8f5e9' },
+      { name: '広場', message: 'CHAGA：広場でみんなのこえを届ける！', bg: '#e3f2fd' }
+    ];
+    const messages = [
+      'CHAGA：やった！きみの応援、めっちゃ嬉しい！',
+      'CHAGA：もっとこどものこえをさがそう！',
+      'CHAGA：きみの応援でパワーアップしたよ！',
+      'CHAGA：すごい！こどものこえが聞こえてきた！',
+      'CHAGA：きみはCHAGAの最高の仲間だ！'
+    ];
+    const rareMessages = [
+      'CHAGA：きみ、未来のヒーローだね！✨',
+      'CHAGA：この応援、こどものこえに届くよ！'
+    ];
+
+    function cheerChaga() {
+      const message = document.getElementById('cheer-message');
+      const countDisplay = document.getElementById('cheer-count');
+      const stageInfo = document.getElementById('stage-info');
+      const image = document.getElementById('chaga-image');
+      const sound = document.getElementById('cheer-sound');
+      
+      cheerCount++;
+      countDisplay.innerHTML = `応援ポイント: ${cheerCount}`;
+      
+      // コンボ判定（1秒以内に連打）
+      const now = Date.now();
+      const isCombo = now - lastClick < 1000;
+      lastClick = now;
+      
+      // ステージ進行
+      if (cheerCount >= 10 && stage === 1) {
+        stage = 2;
+        document.body.style.background = `linear-gradient(${stages[1].bg}, #ccffcc)`;
+      } else if (cheerCount >= 20 && stage === 2) {
+        stage = 3;
+        document.body.style.background = `linear-gradient(${stages[2].bg}, #bbdefb)`;
+      }
+      
+      // メッセージ（ランダムでレアメッセージ）
+      stageInfo.innerHTML = `ステージ${stage}：${stages[stage-1].name}でこどものこえをさがす`;
+      const messageIndex = Math.min(cheerCount - 1, messages.length - 1);
+      let finalMessage = messages[messageIndex];
+      if (Math.random() < 0.1) {
+        finalMessage = rareMessages[Math.floor(Math.random() * rareMessages.length)];
+      }
+      if (isCombo) {
+        finalMessage += '<br>🔥 コンボボーナス！+1ポイント！';
+        cheerCount++;
+        countDisplay.innerHTML = `応援ポイント: ${cheerCount}`;
+      }
+      message.innerHTML = stage < 3 ? finalMessage : 'CHAGA：ミッションクリア！こどものこえをみんなに届けたよ！';
+      
+      // アニメーションとサウンド
+      image.style.animation = `waveChaga ${1 + stage * 0.5}s ${stage}`;
+      sound.play().catch(() => console.log('音声再生エラー'));
+      
+      // クリア演出
+      if (stage === 3 && cheerCount >= 20) {
+        message.innerHTML += '<br>🎉 CHAGA：きみのおかげで大成功！ありがとう！';
+        image.style.transform = 'scale(1.5)';
+        image.innerHTML += '<circle cx="60" cy="20" r="10" fill="#fff"/>';
       }
     }
   </script>
